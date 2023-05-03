@@ -11,7 +11,11 @@ def evaluate(data_loader, model, device):
         torchvision.transforms.RandomGrayscale(p=0.2),
         
     ]
-    
+    ## Define denormalization transform (add)
+    denorm_transform = torchvision.transforms.Normalize(
+            mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+            std=[1/0.229, 1/0.224, 1/0.225]
+            )
     ## Create a composite transform that applies all the augmentation functions (add)
     composite_transform = torchvision.transforms.Compose(tta_transforms)
 
@@ -35,9 +39,19 @@ def evaluate(data_loader, model, device):
         
         ## apply test-time augmentation (add)
         output_list = []
+        original = model(images)
+        output_list.append(original)
         for i in range(20):
             with torch.cuda.amp.autocast():
-                cur_output = model(composite_transform(images))
+                #cur_output = model(composite_transform(images))
+                ## Denormalize images (add)
+                denorm = denorm_transform(images.clone())
+                ## Apply TTA transforms (add)
+                tta_images = composite_transform(denorm)
+                ## Normalize again (add)
+                tta_images = torchvision.transforms.functional.normalize(tta_images, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                cur_output = model(tta_images)
+                #print("cur_out: ", cur_output)
             output_list.append(cur_output)
 
         # take the average of model predictions from different augmentations
