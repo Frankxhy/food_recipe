@@ -6,11 +6,7 @@ We use Google Colab to run this code. This code uses python language to train mo
 
 Please install python 3.7 or later, install pytorch 0.4 or later.
 
-**Training:**
 
-Use the src/train.py to train the model, we train the model with different learning rate and number of iterations.
-
-In src/modules, we create encoder, decoder and multi-head attention for the transformer model.
 
 **Experiment:**
 
